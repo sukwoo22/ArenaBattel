@@ -13,7 +13,15 @@ void UABHUDWidget::BindCharacterStat(class UABCharacterStatComponent* CharacterS
 {
 	ABCHECK(nullptr != CharacterStat);
 	CurrentCharacterStat = CharacterStat;
-	CharacterStat->OnHPChanged.AddUObject(this, &UABHUDWidget::UpdateCharacterStat);
+	CharacterStat->MessageHandlerMulticastDelegate(EMessageID::ON_HP_CHANGED).AddLambda([this](FABMessage& InMessage)->void {
+		ABCHECK(CurrentCharacterStat.IsValid());
+		GET_HP_RATIO GHRMessage;
+		GHRMessage.ReceiverID = CurrentCharacterStat->GetUniqueID();
+		ABMsgEngine::SendMessage(GHRMessage);
+
+		HPBar->SetPercent(GHRMessage.HPRatio);
+		//HPBar->SetPercent(CurrentCharacterStat->GetHPRatio());
+	});
 }
 
 void UABHUDWidget::BindPlayerState(class AABPlayerState* PlayerState)
@@ -48,8 +56,12 @@ void UABHUDWidget::NativeConstruct()
 void UABHUDWidget::UpdateCharacterStat()
 {
 	ABCHECK(CurrentCharacterStat.IsValid());
+	GET_HP_RATIO GHRMessage;
+	GHRMessage.ReceiverID = CurrentCharacterStat->GetUniqueID();
+	ABMsgEngine::SendMessage(GHRMessage);
 
-	HPBar->SetPercent(CurrentCharacterStat->GetHPRatio());
+	HPBar->SetPercent(GHRMessage.HPRatio);
+	//HPBar->SetPercent(CurrentCharacterStat->GetHPRatio());
 }
 
 void UABHUDWidget::UpdatePlayerState()

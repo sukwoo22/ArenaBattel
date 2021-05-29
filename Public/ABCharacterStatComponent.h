@@ -8,11 +8,9 @@
 #include "ABCharacterStatComponent.generated.h"
 
 
-DECLARE_MULTICAST_DELEGATE(FOnHPIsZeroDelegate);
-DECLARE_MULTICAST_DELEGATE(FOnHPChangedDelegate);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class ARENABATTLE_API UABCharacterStatComponent : public UActorComponent, public IABMessageHandler
+class ARENABATTLE_API UABCharacterStatComponent : public UActorComponent, public ABMulticastMessageHandler
 {
 	GENERATED_BODY()
 
@@ -26,17 +24,6 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	virtual void InitializeComponent() override;
-		
-public:
-	void SetNewLevel(int32 NewLevel);
-	void SetDamage(float NewDamage);
-	void SetHP(float NewHP);
-	float GetAttack() const;
-	float GetHPRatio() const;
-	int32 GetDropExp() const;
-
-	FOnHPIsZeroDelegate OnHPIsZero;
-	FOnHPChangedDelegate OnHPChanged;
 
 private:
 	struct FABCharacterData* CurrentStatData = nullptr;

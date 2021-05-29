@@ -11,6 +11,7 @@ enum class EManagerID
 	CONTROLLER_MANAGER,
 	WIDGET_MANAGER,
 	PLAYER_STATE_MANAGER,
+	CHARACTER_COMPONENT_MANAGER,
 };
 
 /**
@@ -20,8 +21,8 @@ class ABMsgEngine
 {
 public:
 
-	static void AddMsgHandlerInManager(EManagerID ManagerID, AActor* MessageHandler);
-	static void DeleteMsgHandlerInManager(EManagerID ManagerID, AActor* MessageHandler);
+	static void AddMsgHandlerInManager(EManagerID ManagerID, int32 MessageHandlerID, IABMessageHandler* MessageHandler);
+	static void DeleteMsgHandlerInManager(EManagerID ManagerID, int32 MessageHandlerID);
 	static void SendMessage(FABMessage& Message);
 
 

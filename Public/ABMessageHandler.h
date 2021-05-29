@@ -8,6 +8,7 @@
 #include "ABMessageHandler.generated.h"
 
 DECLARE_DELEGATE_OneParam(FABMessageHandlerDelegate, FABMessage&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FABMessageHandlerMulticastDelegate, FABMessage&);
 
 UINTERFACE(MinimalAPI)
 class UABMessageHandler : public UInterface
@@ -19,28 +20,16 @@ class ARENABATTLE_API IABMessageHandler
 {
 	GENERATED_BODY()
 public:
-	/*static IABTelegramUser* Get()
-	{
-		static IABTelegramUser* TelegramUser = new IABTelegramUser();
-		return TelegramUser;
-	}*/
 
 	virtual void HandleMessage(FABMessage& Message)
 	{
-		auto MessageHandlerDelegate = MessageHandlerDelegateMap.Find(Message.ID);
-
-		if (nullptr != MessageHandlerDelegate)
+		if (MessageHandlerDelegateMap.Contains(Message.ID))
 		{
-			MessageHandlerDelegate->Execute(Message);
+			MessageHandlerDelegateMap[Message.ID].Execute(Message);
 		}
 	}
 
 	virtual void BindMsgHandlerDelegates() = 0;
-
-	FABMessageHandlerDelegate& operator[](EMessageID MessageID)
-	{
-		return MessageHandlerDelegateMap.FindOrAdd(MessageID);
-	}
 
 	FABMessageHandlerDelegate& MessageHandlerDelegate(EMessageID MessageID)
 	{
@@ -52,14 +41,42 @@ public:
 		return MessageHandlerDelegateMap.Num() ? false : true;
 	}
 
-private:
-	/*ABTelegramUser() = default;
-	ABTelegramUser(const ABTelegramUser&) = delete;
-	ABTelegramUser(ABTelegramUser&&) = delete;
-	ABTelegramUser& operator=(const ABTelegramUser&) = delete;
-	ABTelegramUser& operator=(ABTelegramUser&&) = delete;*/
+protected:
+	TMap<EMessageID, FABMessageHandlerDelegate>& GetMessageHandlerDelegateMap()
+	{
+		return MessageHandlerDelegateMap;
+	}
 
 private:
 	TMap<EMessageID, FABMessageHandlerDelegate> MessageHandlerDelegateMap;
 };
 
+class ARENABATTLE_API ABMulticastMessageHandler : public IABMessageHandler
+{
+	
+public:
+
+	virtual void HandleMessage(FABMessage& Message)
+	{
+		auto& MsgHandlerDelegateMap = GetMessageHandlerDelegateMap();
+
+		if (MsgHandlerDelegateMap.Contains(Message.ID))
+		{
+			MsgHandlerDelegateMap[Message.ID].Execute(Message);
+		}
+		else if (MessageHandlerMulticastDelegateMap.Contains(Message.ID))
+		{
+			MessageHandlerMulticastDelegateMap[Message.ID].Broadcast(Message);
+		}
+	}
+
+	virtual void BindMsgHandlerDelegates() = 0;
+
+	FABMessageHandlerMulticastDelegate& MessageHandlerMulticastDelegate(EMessageID MessageID)
+	{
+		return MessageHandlerMulticastDelegateMap.FindOrAdd(MessageID);
+	}
+
+private:
+	TMap<EMessageID, FABMessageHandlerMulticastDelegate> MessageHandlerMulticastDelegateMap;
+};

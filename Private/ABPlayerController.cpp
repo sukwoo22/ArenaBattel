@@ -31,7 +31,7 @@ AABPlayerController::AABPlayerController()
 	}
 
 	BindMsgHandlerDelegates();
-	ABMsgEngine::AddMsgHandlerInManager(EManagerID::CONTROLLER_MANAGER, this);
+	ABMsgEngine::AddMsgHandlerInManager(EManagerID::CONTROLLER_MANAGER, GetUniqueID(), this);
 }
 
 void AABPlayerController::PostInitializeComponents()

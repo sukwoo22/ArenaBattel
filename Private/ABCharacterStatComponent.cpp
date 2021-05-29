@@ -3,6 +3,7 @@
 
 #include "ABCharacterStatComponent.h"
 #include "ABGameInstance.h"
+#include "ABMsgEngine.h"
 
 // Sets default values for this component's properties
 UABCharacterStatComponent::UABCharacterStatComponent()
@@ -13,8 +14,78 @@ UABCharacterStatComponent::UABCharacterStatComponent()
 	bWantsInitializeComponent = true;
 
 	Level = 1;
+	BindMsgHandlerDelegates();
+	ABMsgEngine::AddMsgHandlerInManager(EManagerID::CHARACTER_COMPONENT_MANAGER, GetUniqueID(), this);
 }
 
+
+void UABCharacterStatComponent::BindMsgHandlerDelegates()
+{
+	MH_DEFI(SET_NEW_LEVEL)
+	{
+		MH_INIT(SET_NEW_LEVEL);
+		auto ABGameInstance = Cast<UABGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+
+		ABCHECK(ABGameInstance != nullptr);
+		CurrentStatData = ABGameInstance->GetABCharacterData(Message.NewLevel);
+		if (CurrentStatData != nullptr)
+		{
+			Level = Message.NewLevel;
+			SET_HP SHMessage;
+			SHMessage.NewHP = CurrentStatData->MaxHP;
+			HandleMessage(SHMessage);
+		}
+		else
+		{
+			ABLOG(Error, TEXT("Level (%d) data doesn't exist"), Message.NewLevel);
+		}
+	}MH_DEFI_END;
+	
+	MH_DEFI(SET_DAMAGE)
+	{
+		MH_INIT(SET_DAMAGE);
+		ABCHECK(nullptr != CurrentStatData);
+		SET_HP SHMessage;
+		SHMessage.NewHP = FMath::Clamp<float>(CurrentHP - Message.NewDamage, 0.0f, CurrentStatData->MaxHP);
+		HandleMessage(SHMessage);
+	}MH_DEFI_END;
+
+	MH_DEFI(SET_HP)
+	{
+		MH_INIT(SET_HP);
+		CurrentHP = Message.NewHP;
+		ON_HP_CHANGED OHCMessage;
+		HandleMessage(OHCMessage);
+
+		if (CurrentHP < KINDA_SMALL_NUMBER)
+		{
+			CurrentHP = 0.0f;
+			ON_HP_IS_ZERO OHIZMessage;
+			HandleMessage(OHIZMessage);
+		}
+	}MH_DEFI_END;
+	
+	MH_DEFI(GET_ATTACK)
+	{
+		MH_INIT(GET_ATTACK);
+		ABCHECK(nullptr != CurrentStatData);
+		Message.Attack = CurrentStatData->Attack;
+	}MH_DEFI_END;
+
+	MH_DEFI(GET_HP_RATIO)
+	{
+		MH_INIT(GET_HP_RATIO);
+		ABCHECK(nullptr != CurrentStatData);
+		Message.HPRatio = CurrentStatData->MaxHP < KINDA_SMALL_NUMBER ? 0.0f : CurrentHP / CurrentStatData->MaxHP;
+	}MH_DEFI_END;
+
+	MH_DEFI(GET_DROP_EXP)
+	{
+		MH_INIT(GET_DROP_EXP);
+		Message.DropExp = CurrentStatData->DropExp;
+	}MH_DEFI_END;
+	
+}
 
 // Called when the game starts
 void UABCharacterStatComponent::BeginPlay()
@@ -25,57 +96,8 @@ void UABCharacterStatComponent::BeginPlay()
 void UABCharacterStatComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
-	SetNewLevel(Level);
-}
-
-void UABCharacterStatComponent::SetNewLevel(int32 NewLevel)
-{
-	auto ABGameInstance = Cast<UABGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-
-	ABCHECK(ABGameInstance != nullptr);
-	CurrentStatData = ABGameInstance->GetABCharacterData(NewLevel);
-	if (CurrentStatData != nullptr)
-	{
-		Level = NewLevel;
-		SetHP(CurrentStatData->MaxHP);
-	}
-	else
-	{
-		ABLOG(Error, TEXT("Level (%d) data doesn't exist"), NewLevel);
-	}
-}
-
-void UABCharacterStatComponent::SetDamage(float NewDamage)
-{
-	ABCHECK(nullptr != CurrentStatData);
-	SetHP(FMath::Clamp<float>(CurrentHP - NewDamage, 0.0f, CurrentStatData->MaxHP));
-}
-
-void UABCharacterStatComponent::SetHP(float NewHP)
-{
-	CurrentHP = NewHP;
-	OnHPChanged.Broadcast();
-	if (CurrentHP < KINDA_SMALL_NUMBER)
-	{
-		CurrentHP = 0.0f;
-		OnHPIsZero.Broadcast();
-	}
-}
-
-float UABCharacterStatComponent::GetAttack() const
-{
-	ABCHECK(nullptr != CurrentStatData, 0.0f);
-	return CurrentStatData->Attack;
-}
-
-float UABCharacterStatComponent::GetHPRatio() const
-{
-	ABCHECK(nullptr != CurrentStatData, 0.0f);
-	return CurrentStatData->MaxHP < KINDA_SMALL_NUMBER ? 0.0f : CurrentHP / CurrentStatData->MaxHP;
-}
-
-int32 UABCharacterStatComponent::GetDropExp() const
-{
-	return CurrentStatData->DropExp;
+	SET_NEW_LEVEL Message;
+	Message.NewLevel = Level;
+	HandleMessage(Message);
 }
 

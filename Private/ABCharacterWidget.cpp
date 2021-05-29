@@ -4,13 +4,27 @@
 #include "ABCharacterWidget.h"
 #include "ABCharacterStatComponent.h"
 #include "Components/ProgressBar.h"
+#include "ABMsgEngine.h"
 
 void UABCharacterWidget::BindCharacterStat(class UABCharacterStatComponent* NewCharacterStat)
 {
 	ABCHECK(nullptr != NewCharacterStat);
 
 	CurrentCharacterStat = NewCharacterStat;
-	NewCharacterStat->OnHPChanged.AddUObject(this, &UABCharacterWidget::UpdateHPWidget);
+	NewCharacterStat->MessageHandlerMulticastDelegate(EMessageID::ON_HP_CHANGED).AddLambda([this](FABMessage& InMessage)->void {
+		if (CurrentCharacterStat.IsValid())
+		{
+			if (nullptr != HPProgressBar)
+			{
+				GET_HP_RATIO GHRMessage;
+				GHRMessage.ReceiverID = CurrentCharacterStat->GetUniqueID();
+				ABMsgEngine::SendMessage(GHRMessage);
+
+				HPProgressBar->SetPercent(GHRMessage.HPRatio);
+				//HPProgressBar->SetPercent(CurrentCharacterStat->GetHPRatio());
+			}
+		}
+	});
 }
 
 void UABCharacterWidget::NativeConstruct()
@@ -27,7 +41,12 @@ void UABCharacterWidget::UpdateHPWidget()
 	{
 		if (nullptr != HPProgressBar)
 		{
-			HPProgressBar->SetPercent(CurrentCharacterStat->GetHPRatio());
+			GET_HP_RATIO GHRMessage;
+			GHRMessage.ReceiverID = CurrentCharacterStat->GetUniqueID();
+			ABMsgEngine::SendMessage(GHRMessage);
+
+			HPProgressBar->SetPercent(GHRMessage.HPRatio);
+			//HPProgressBar->SetPercent(CurrentCharacterStat->GetHPRatio());
 		}
 	}
 }

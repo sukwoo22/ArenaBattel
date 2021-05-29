@@ -4,23 +4,24 @@
 #include "ABMsgEngine.h"
 
 
-void ABMsgEngine::AddMsgHandlerInManager(EManagerID ManagerID, AActor* MessageHandler)
+void ABMsgEngine::AddMsgHandlerInManager(EManagerID ManagerID, int32 MessageHandlerID, IABMessageHandler* MessageHandler)
 {
 	ABCHECK(nullptr != MessageHandler);
 	auto& MsgHandlerManagerMap = GetMessageHandlerManagerMap();
 	auto& MsgHandlerManager = MsgHandlerManagerMap.FindOrAdd(ManagerID);
-	MsgHandlerManager.Add(MessageHandler->GetUniqueID(), Cast<IABMessageHandler>(MessageHandler));
+
+	MsgHandlerManager.Add(MessageHandlerID, MessageHandler);
 }
 
-void ABMsgEngine::DeleteMsgHandlerInManager(EManagerID ManagerID, AActor* MessageHandler)
+void ABMsgEngine::DeleteMsgHandlerInManager(EManagerID ManagerID, int32 MessageHandlerID)
 {
-	ABCHECK(nullptr != MessageHandler);
+	ABCHECK(0 != MessageHandlerID);
 	auto& MsgHandlerManagerMap = GetMessageHandlerManagerMap();
 	if (MsgHandlerManagerMap.Contains(ManagerID))
 	{
-		if (MsgHandlerManagerMap[ManagerID].Contains(MessageHandler->GetUniqueID()))
+		if (MsgHandlerManagerMap[ManagerID].Contains(MessageHandlerID))
 		{
-			MsgHandlerManagerMap[ManagerID].Remove(MessageHandler->GetUniqueID());
+			MsgHandlerManagerMap[ManagerID].Remove(MessageHandlerID);
 		}
 	}
 }
@@ -49,7 +50,17 @@ void ABMsgEngine::SendMessage(FABMessage& Message)
 			auto& HandlerMap = Manager.Value;
 			if (HandlerMap.Contains(Message.ReceiverID))
 			{
-				HandlerMap[Message.ReceiverID]->HandleMessage(Message);
+				auto MessageHandler = HandlerMap[Message.ReceiverID];
+				if (nullptr != MessageHandler)
+				{
+					MessageHandler->HandleMessage(Message);
+				}
+				else
+				{
+					auto MMessageHandler = Cast<ABMulticastMessageHandler>(MessageHandler);
+					MMessageHandler->HandleMessage(Message);
+				}
+				//HandlerMap[Message.ReceiverID]->HandleMessage(Message);
 				return;
 			}
 		}

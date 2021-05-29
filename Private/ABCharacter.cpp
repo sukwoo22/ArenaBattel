@@ -98,7 +98,7 @@ AABCharacter::AABCharacter()
 		BindMsgHandlerDelegates();
 	}
 
-	ABMsgEngine::AddMsgHandlerInManager(EManagerID::CHARACTER_MANAGER, this);
+	ABMsgEngine::AddMsgHandlerInManager(EManagerID::CHARACTER_MANAGER, GetUniqueID(), this);
 }
 
 void AABCharacter::BindMsgHandlerDelegates()
@@ -133,7 +133,11 @@ void AABCharacter::BindMsgHandlerDelegates()
 					GET_CHARACTER_LEVEL GCLMessage;
 					GCLMessage.ReceiverID = ABPlayerState->GetUniqueID();
 					ABMsgEngine::SendMessage(GCLMessage);
-					CharacterStat->SetNewLevel(GCLMessage.CharacterLevel);
+					
+					SET_NEW_LEVEL SNLMessage;
+					SNLMessage.ReceiverID = CharacterStat->GetUniqueID();
+					SNLMessage.NewLevel = GCLMessage.CharacterLevel;
+					ABMsgEngine::SendMessage(SNLMessage);
 				}
 				else
 				{
@@ -142,7 +146,11 @@ void AABCharacter::BindMsgHandlerDelegates()
 					int32 TargetLevel = FMath::CeilToInt(((float)ABGameMode->GetScore() * 0.8f));
 					int32 FinalLevel = FMath::Clamp<int32>(TargetLevel, 1, 20);
 					ABLOG(Warning, TEXT("New NPC Level : %d "), FinalLevel);
-					CharacterStat->SetNewLevel(FinalLevel);
+					
+					SET_NEW_LEVEL SNLMessage;
+					SNLMessage.ReceiverID = CharacterStat->GetUniqueID();
+					SNLMessage.NewLevel = FinalLevel;
+					ABMsgEngine::SendMessage(SNLMessage);
 				}
 				SetActorHiddenInGame(true);
 				HPBarWidget->SetHiddenInGame(true);
@@ -154,7 +162,8 @@ void AABCharacter::BindMsgHandlerDelegates()
 				SetActorHiddenInGame(false);
 				HPBarWidget->SetHiddenInGame(false);
 				SetCanBeDamaged(true);
-				CharacterStat->OnHPIsZero.AddLambda([this]()->void {
+				
+				CharacterStat->MessageHandlerDelegate(EMessageID::ON_HP_IS_ZERO).BindLambda([this](FABMessage& InMessage)->void {
 					SET_CHARACTER_STATE SCSMessage;
 					SCSMessage.CharacterState = ECharacterState::DEAD;
 					HandleMessage(SCSMessage);
@@ -223,7 +232,11 @@ void AABCharacter::BindMsgHandlerDelegates()
 	MH_DEFI(GET_EXP)
 	{
 		MH_INIT(GET_EXP);
-		Message.Exp = CharacterStat->GetDropExp();
+		GET_DROP_EXP GDEMessage;
+		GDEMessage.ReceiverID = CharacterStat->GetUniqueID();
+		ABMsgEngine::SendMessage(GDEMessage);
+		Message.Exp = GDEMessage.DropExp;
+		//Message.Exp = CharacterStat->GetDropExp();
 	}MH_DEFI_END;
 
 	MH_DEFI(GET_FINAL_ATTACK_RANGE)
@@ -235,7 +248,10 @@ void AABCharacter::BindMsgHandlerDelegates()
 	MH_DEFI(GET_FINAL_ATTACK_DAMAGE)
 	{
 		MH_INIT(GET_FINAL_ATTACK_DAMAGE);
-		float AttackDamage = nullptr != CurrentWeapon ? CharacterStat->GetAttack() + CurrentWeapon->GetAttackDamage() : CharacterStat->GetAttack();
+		GET_ATTACK GAMessage;
+		GAMessage.ReceiverID = CharacterStat->GetUniqueID();
+		ABMsgEngine::SendMessage(GAMessage);
+		float AttackDamage = nullptr != CurrentWeapon ? GAMessage.Attack + CurrentWeapon->GetAttackDamage() : GAMessage.Attack;
 		float AttackModifier = nullptr != CurrentWeapon ? CurrentWeapon->GetAttackModifier() : 1.0f;
 		Message.FinalDamage = AttackDamage * AttackModifier;
 	}MH_DEFI_END;
@@ -502,7 +518,11 @@ float AABCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 {
 	float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	CharacterStat->SetDamage(FinalDamage);
+	SET_DAMAGE SDMessage;
+	SDMessage.ReceiverID = CharacterStat->GetUniqueID();
+	SDMessage.NewDamage = FinalDamage;
+	ABMsgEngine::SendMessage(SDMessage);
+
 	if (CurrentState == ECharacterState::DEAD)
 	{
 		if (EventInstigator->IsPlayerController())

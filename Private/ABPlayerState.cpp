@@ -16,7 +16,7 @@ AABPlayerState::AABPlayerState()
 	CharacterIndex = 0;
 
 	BindMsgHandlerDelegates();
-	ABMsgEngine::AddMsgHandlerInManager(EManagerID::PLAYER_STATE_MANAGER, this);
+	ABMsgEngine::AddMsgHandlerInManager(EManagerID::PLAYER_STATE_MANAGER, GetUniqueID(), this);
 }
 
 void AABPlayerState::BindMsgHandlerDelegates()
