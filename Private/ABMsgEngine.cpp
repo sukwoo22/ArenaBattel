@@ -48,6 +48,7 @@ void ABMsgEngine::SendMessage(FABMessage& Message)
 		for (auto& Manager : MsgHandlerManagerMap)
 		{
 			auto& HandlerMap = Manager.Value;
+
 			if (HandlerMap.Contains(Message.ReceiverID))
 			{
 				auto MessageHandler = HandlerMap[Message.ReceiverID];
