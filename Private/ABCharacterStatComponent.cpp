@@ -53,6 +53,9 @@ void UABCharacterStatComponent::BindMsgHandlerDelegates()
 	MH_DEFI(SET_HP)
 	{
 		MH_INIT(SET_HP);
+		// ON HP Channged 와  SET HP는 하나로 멀티 캐스트 델리케이트 해도 문제가 없다 아마도?
+		// 추후 코드 머지 필요.
+
 		CurrentHP = Message.NewHP;
 		ON_HP_CHANGED OHCMessage;
 		HandleMessage(OHCMessage);

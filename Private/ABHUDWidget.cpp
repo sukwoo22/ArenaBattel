@@ -47,6 +47,8 @@ void UABHUDWidget::BindCharacterStat(class UABCharacterStatComponent* CharacterS
 	});
 }
 
+//void UABHUDWidget::BindPlayerState(GET_PLAYER_STATE Inmessage)
+
 void UABHUDWidget::BindPlayerState(class AABPlayerState* PlayerState)
 {
 	ABCHECK(nullptr != PlayerState);
