@@ -22,7 +22,6 @@ enum class EMessageID
 	GET_EXP,
 	GET_FINAL_ATTACK_RANGE,
 	GET_FINAL_ATTACK_DAMAGE,
-	//GET_ATTACK_PARAMETER,
 	SET_CONTROL_MODE,
 	SET_WEAPON,
 	ATTACK,
@@ -45,6 +44,8 @@ enum class EMessageID
 	ADD_EXP,
 	INIT_PLAYER_DATA,
 	SAVE_PLAYER_DATA,
+	ON_PLAYER_STATE_CHANGED,
+
 	//ABCharacterStatComponent
 	SET_NEW_LEVEL,
 	SET_DAMAGE,
@@ -54,13 +55,17 @@ enum class EMessageID
 	GET_DROP_EXP,
 	ON_HP_IS_ZERO,
 	ON_HP_CHANGED,
+
+	//ABHUDWidget
+	BIND_CHARACTER_STAT,
+	BIND_PLAYER_STATE,
 };
 
 USTRUCT()
 struct FABMessage
 {
 	GENERATED_BODY()
-	EMessageID ID;
+		EMessageID ID;
 	int32 ReceiverID;
 };
 
@@ -93,12 +98,6 @@ MSG_DECL_END
 MSG_DECL(GET_FINAL_ATTACK_DAMAGE)
 OUT float FinalDamage;
 MSG_DECL_END
-
-//MSG_DECL(GET_ATTACK_PARAMETER)
-//OUT float DefalutDamage;
-//OUT float WeaponDamage;
-//OUT float WeaponModifier;
-//MSG_DECL_END
 
 MSG_DECL(SET_CONTROL_MODE)
 IN EControlMode ControlMode;
@@ -180,6 +179,15 @@ MSG_DECL_END
 
 MSG_DECL(SAVE_PLAYER_DATA)
 MSG_DECL_END
+
+MSG_DECL(ON_PLAYER_STATE_CHANGED)
+OUT int32 GameScore;
+OUT int32 GameHightScore;
+OUT int32 CharacterLevel;
+OUT int32 CharacterIndex;
+OUT float ExpRatio;
+OUT FString PlayerName;
+MSG_DECL_END
 #pragma endregion
 
 #pragma region ABCharacterStatComponenetMessage
@@ -211,5 +219,13 @@ MSG_DECL(ON_HP_IS_ZERO)
 MSG_DECL_END
 
 MSG_DECL(ON_HP_CHANGED)
+MSG_DECL_END
+#pragma endregion
+
+#pragma region ABHUDWidgetMessage
+MSG_DECL(BIND_CHARACTER_STAT)
+MSG_DECL_END
+
+MSG_DECL(BIND_PLAYER_STATE)
 MSG_DECL_END
 #pragma endregion

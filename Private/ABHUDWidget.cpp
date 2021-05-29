@@ -9,6 +9,30 @@
 #include "ABMsgEngine.h"
 
 
+void UABHUDWidget::BindMsgHandlerDelegates()
+{
+	MH_DEFI(BIND_CHARACTER_STAT)
+	{
+		MH_INIT(BIND_CHARACTER_STAT);
+		////*ABCHECK*/(nullptr != CharacterStat);
+		////CurrentCharacterStat = CharacterStat;
+		//CharacterStat->MessageHandlerMulticastDelegate(EMessageID::ON_HP_CHANGED).AddLambda([this](FABMessage& InMessage)->void {
+		//	ABCHECK(CurrentCharacterStat.IsValid());
+		//	GET_HP_RATIO GHRMessage;
+		//	GHRMessage.ReceiverID = CurrentCharacterStat->GetUniqueID();
+		//	ABMsgEngine::SendMessage(GHRMessage);
+
+		//	HPBar->SetPercent(GHRMessage.HPRatio);
+		//});
+	}MH_DEFI_END;
+
+	MH_DEFI(BIND_PLAYER_STATE)
+	{
+		MH_INIT(BIND_PLAYER_STATE);
+
+	}MH_DEFI_END;
+}
+
 void UABHUDWidget::BindCharacterStat(class UABCharacterStatComponent* CharacterStat)
 {
 	ABCHECK(nullptr != CharacterStat);
@@ -20,7 +44,6 @@ void UABHUDWidget::BindCharacterStat(class UABCharacterStatComponent* CharacterS
 		ABMsgEngine::SendMessage(GHRMessage);
 
 		HPBar->SetPercent(GHRMessage.HPRatio);
-		//HPBar->SetPercent(CurrentCharacterStat->GetHPRatio());
 	});
 }
 
@@ -28,7 +51,20 @@ void UABHUDWidget::BindPlayerState(class AABPlayerState* PlayerState)
 {
 	ABCHECK(nullptr != PlayerState);
 	CurrentPlayerState = PlayerState;
-	PlayerState->OnPlayerStateChanged.AddUObject(this, &UABHUDWidget::UpdatePlayerState);
+
+	PlayerState->MessageHandlerMulticastDelegate(EMessageID::ON_PLAYER_STATE_CHANGED).AddLambda([this](FABMessage& InMessage)->void {
+		ABCHECK(CurrentPlayerState.IsValid());
+
+		GET_PLAYER_STATE GPSMessage;
+		GPSMessage.ReceiverID = CurrentPlayerState->GetUniqueID();
+		ABMsgEngine::SendMessage(GPSMessage);
+
+		ExpBar->SetPercent(GPSMessage.ExpRatio);
+		PlayerName->SetText(FText::FromString(GPSMessage.PlayerName));
+		PlayerLevel->SetText(FText::FromString(FString::FromInt(GPSMessage.CharacterLevel)));
+		CurrentScore->SetText(FText::FromString(FString::FromInt(GPSMessage.GameScore)));
+		HighScore->SetText(FText::FromString(FString::FromInt(GPSMessage.GameHightScore)));
+	});
 }
 
 void UABHUDWidget::NativeConstruct()
@@ -53,28 +89,3 @@ void UABHUDWidget::NativeConstruct()
 	ABCHECK(nullptr != HighScore);
 }
 
-void UABHUDWidget::UpdateCharacterStat()
-{
-	ABCHECK(CurrentCharacterStat.IsValid());
-	GET_HP_RATIO GHRMessage;
-	GHRMessage.ReceiverID = CurrentCharacterStat->GetUniqueID();
-	ABMsgEngine::SendMessage(GHRMessage);
-
-	HPBar->SetPercent(GHRMessage.HPRatio);
-	//HPBar->SetPercent(CurrentCharacterStat->GetHPRatio());
-}
-
-void UABHUDWidget::UpdatePlayerState()
-{
-	ABCHECK(CurrentPlayerState.IsValid());
-
-	GET_PLAYER_STATE Message;
-	Message.ReceiverID = CurrentPlayerState->GetUniqueID();
-	ABMsgEngine::SendMessage(Message);
-
-	ExpBar->SetPercent(Message.ExpRatio);
-	PlayerName->SetText(FText::FromString(Message.PlayerName));
-	PlayerLevel->SetText(FText::FromString(FString::FromInt(Message.CharacterLevel)));
-	CurrentScore->SetText(FText::FromString(FString::FromInt(Message.GameScore)));
-	HighScore->SetText(FText::FromString(FString::FromInt(Message.GameHightScore)));
-}

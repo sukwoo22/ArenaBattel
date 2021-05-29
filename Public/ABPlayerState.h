@@ -7,13 +7,12 @@
 #include "ABMessageHandler.h"
 #include "ABPlayerState.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnPlayerStateChangedDelegate);
 
 /**
  * 
  */
 UCLASS()
-class ARENABATTLE_API AABPlayerState : public APlayerState, public IABMessageHandler
+class ARENABATTLE_API AABPlayerState : public APlayerState, public ABMulticastMessageHandler
 {
 	GENERATED_BODY()
 	
@@ -22,14 +21,12 @@ public:
 
 	virtual void BindMsgHandlerDelegates() override;
 
-	FOnPlayerStateChangedDelegate OnPlayerStateChanged;
-
 	FString SaveSlotName;
 
 private:
 	void SetCharacterLevel(int32 NewCharacterLevel);
 	struct FABCharacterData* CurrentStatData;
-
+	
 private:
 	UPROPERTY(Transient)
 	int32 GameScore;
@@ -45,6 +42,4 @@ private:
 
 	UPROPERTY(Transient)
 	int32 CharacterIndex;
-
-
 };

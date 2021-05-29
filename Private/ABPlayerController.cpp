@@ -127,7 +127,10 @@ void AABPlayerController::BeginPlay()
 	ABPlayerState = Cast<AABPlayerState>(PlayerState);
 	ABCHECK(nullptr != ABPlayerState);
 	HUDWidget->BindPlayerState(ABPlayerState);
-	ABPlayerState->OnPlayerStateChanged.Broadcast();
+
+	ON_PLAYER_STATE_CHANGED OPSCMessage;
+	OPSCMessage.ReceiverID = ABPlayerState->GetUniqueID();
+	ABMsgEngine::SendMessage(OPSCMessage);
 }
 
 void AABPlayerController::OnGamePause()

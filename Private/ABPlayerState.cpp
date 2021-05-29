@@ -93,7 +93,8 @@ void AABPlayerState::BindMsgHandlerDelegates()
 			DidLevelUp = true;
 		}
 
-		OnPlayerStateChanged.Broadcast();
+		ON_PLAYER_STATE_CHANGED OPSCMessage;
+		HandleMessage(OPSCMessage);
 		SAVE_PLAYER_DATA SPDMessage;
 		HandleMessage(SPDMessage);
 		Message.IsSuccess = DidLevelUp;
@@ -107,7 +108,8 @@ void AABPlayerState::BindMsgHandlerDelegates()
 		{
 			GameHighScore = GameScore;
 		}
-		OnPlayerStateChanged.Broadcast();
+		ON_PLAYER_STATE_CHANGED OPSCMessage;
+		HandleMessage(OPSCMessage);
 		SAVE_PLAYER_DATA SPDMessage;
 		HandleMessage(SPDMessage);
 	}MH_DEFI_END;
