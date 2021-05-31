@@ -29,6 +29,7 @@ enum class EMessageID
 	ATTACK_END_COMBO_STATE,
 	ATTACK_CHECK,
 	ON_ASSET_LOAD_COMPLETED,
+	ON_ATTACK_END,
 	//ABControllerMessage
 	GET_HUD_WIDGET,
 	GAIN_EXP,
@@ -41,6 +42,7 @@ enum class EMessageID
 	GET_CHARACTER_LEVEL,
 	GET_CHARACTER_INDEX,
 	GET_EXP_RATIO,
+	GET_SAVE_SLOT_NAME,
 	ADD_EXP,
 	INIT_PLAYER_DATA,
 	SAVE_PLAYER_DATA,
@@ -55,25 +57,45 @@ enum class EMessageID
 	GET_DROP_EXP,
 	ON_HP_IS_ZERO,
 	ON_HP_CHANGED,
-
-	//ABHUDWidget
-	BIND_CHARACTER_STAT,
-	BIND_PLAYER_STATE,
+	
+	//ABAnimInstance
+	PLAY_ATTACK_MONTAGE,
+	JUMP_TO_ATTACK_MONTAGE_SECTION,
+	ON_NEXT_ATTACK_CHECK,
+	ON_ATTACK_HIT_CHECK,
+	SET_DEAD_ANIM,
 };
+
+#pragma region ABMsgLog
+class ARENABATTLE_API FABMsgLogHelp
+{
+public:
+	static FABMsgLogHelp& Get();
+	FString GetEnumToString(EMessageID EnumValue);
+	int32 FindFuncSignaureIndex(const FString& str);
+	FString GetFuncName(const FString& str);
+};
+
+#define ABLOG_MSGINFO(MessageID) (FABMsgLogHelp::Get().GetFuncName(FString(__FUNCTION__)) \
++ FABMsgLogHelp::Get().GetEnumToString(MessageID) + TEXT(" ( Line : ") + FString::FromInt(__LINE__) + TEXT(" )"))
+
+#define ABLOG_MSG(Verbosity, MessageID, Format,  ...) UE_LOG(ArenaBattle, Verbosity, TEXT("%s %s") \
+	, *ABLOG_MSGINFO(MessageID), *FString::Printf(Format, ##__VA_ARGS__))  
+#pragma endregion
+
+
 
 USTRUCT()
 struct FABMessage
 {
 	GENERATED_BODY()
-		EMessageID ID;
+	
+	EMessageID ID;
 	int32 ReceiverID;
 };
 
-//Handle Message
-//#define HANDLE_MSG(Message) HandleMessage(Message)
-
 //Message Handler Definition
-#define MH_DEFI(MessageName) MessageHandlerDelegate(EMessageID::##MessageName).BindLambda([this](FABMessage& InMessage)
+#define MH_DEFI(MessageName) SinglecastMessageHandlerDelegate(EMessageID::##MessageName).BindLambda([this](FABMessage& InMessage)
 #define MH_INIT(MessageName) auto& Message = static_cast<MessageName&>(InMessage) 
 #define MH_DEFI_END )
 
@@ -120,6 +142,9 @@ MSG_DECL(ATTACK_CHECK)
 MSG_DECL_END
 
 MSG_DECL(ON_ASSET_LOAD_COMPLETED)
+MSG_DECL_END
+
+MSG_DECL(ON_ATTACK_END)
 MSG_DECL_END
 #pragma endregion
 
@@ -169,6 +194,10 @@ MSG_DECL(GET_EXP_RATIO)
 OUT float ExpRatio;
 MSG_DECL_END
 
+MSG_DECL(GET_SAVE_SLOT_NAME)
+OUT FString* SaveSlotName;
+MSG_DECL_END
+
 MSG_DECL(ADD_EXP)
 IN int32 Exp;
 OUT bool IsSuccess;
@@ -181,12 +210,6 @@ MSG_DECL(SAVE_PLAYER_DATA)
 MSG_DECL_END
 
 MSG_DECL(ON_PLAYER_STATE_CHANGED)
-OUT int32 GameScore;
-OUT int32 GameHightScore;
-OUT int32 CharacterLevel;
-OUT int32 CharacterIndex;
-OUT float ExpRatio;
-OUT FString PlayerName;
 MSG_DECL_END
 #pragma endregion
 
@@ -222,10 +245,20 @@ MSG_DECL(ON_HP_CHANGED)
 MSG_DECL_END
 #pragma endregion
 
-#pragma region ABHUDWidgetMessage
-MSG_DECL(BIND_CHARACTER_STAT)
+#pragma region ABAnimInstanceMsg
+MSG_DECL(PLAY_ATTACK_MONTAGE)
 MSG_DECL_END
 
-MSG_DECL(BIND_PLAYER_STATE)
+MSG_DECL(JUMP_TO_ATTACK_MONTAGE_SECTION)
+IN int32 NewSection;
+MSG_DECL_END
+
+MSG_DECL(ON_NEXT_ATTACK_CHECK)
+MSG_DECL_END
+
+MSG_DECL(ON_ATTACK_HIT_CHECK)
+MSG_DECL_END
+
+MSG_DECL(SET_DEAD_ANIM)
 MSG_DECL_END
 #pragma endregion

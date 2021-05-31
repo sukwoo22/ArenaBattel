@@ -15,7 +15,7 @@ UABCharacterStatComponent::UABCharacterStatComponent()
 
 	Level = 1;
 	BindMsgHandlerDelegates();
-	ABMsgEngine::AddMsgHandlerInManager(EManagerID::CHARACTER_COMPONENT_MANAGER, GetUniqueID(), this);
+	FABMsgEngine::AddMsgHandlerInManager(EManagerID::CHARACTER_COMPONENT_MANAGER, GetUniqueID(), this);
 }
 
 
@@ -48,14 +48,16 @@ void UABCharacterStatComponent::BindMsgHandlerDelegates()
 		SET_HP SHMessage;
 		SHMessage.NewHP = FMath::Clamp<float>(CurrentHP - Message.NewDamage, 0.0f, CurrentStatData->MaxHP);
 		HandleMessage(SHMessage);
+		
+		//ABLOG(Warning, TEXT(" HPRatio : %f, CurrentHP : %f"), CurrentHP / CurrentStatData->MaxHP, CurrentHP);
+		ABLOG_MSG(Warning, Message.ID,TEXT(" HPRatio : %f, CurrentHP : %f"), CurrentHP / CurrentStatData->MaxHP, CurrentHP);
 	}MH_DEFI_END;
+
 
 	MH_DEFI(SET_HP)
 	{
 		MH_INIT(SET_HP);
-		// ON HP Channged 와  SET HP는 하나로 멀티 캐스트 델리케이트 해도 문제가 없다 아마도?
-		// 추후 코드 머지 필요.
-
+		
 		CurrentHP = Message.NewHP;
 		ON_HP_CHANGED OHCMessage;
 		HandleMessage(OHCMessage);

@@ -22,11 +22,11 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent & OwnerCo
 	
 	ATTACK ATKMessage;
 	ATKMessage.ReceiverID = ABCharacter->GetUniqueID();
-	ABMsgEngine::SendMessage(ATKMessage);
+	FABMsgEngine::SendMessage(ATKMessage);
 
 	IsAttacking = true;
-	ABCharacter->OnAttackEnd.AddLambda([this]()->void {
-		IsAttacking = false; 
+	ABCharacter->SinglecastMessageHandlerDelegate(EMessageID::ON_ATTACK_END).BindLambda([this](FABMessage& InMessage)-> void {
+		IsAttacking = false;
 	});
 
 	return EBTNodeResult::InProgress;

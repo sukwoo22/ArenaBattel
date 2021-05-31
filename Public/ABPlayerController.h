@@ -11,7 +11,7 @@
  * 
  */
 UCLASS()
-class ARENABATTLE_API AABPlayerController : public APlayerController, public IABMessageHandler
+class ARENABATTLE_API AABPlayerController : public APlayerController, public FABSiglecastMessageHandler
 {
 	GENERATED_BODY()
 	
@@ -26,6 +26,10 @@ protected:
 	virtual void SetupInputComponent() override;
 	virtual void BeginPlay() override;
 
+private:
+	void OnGamePause();
+
+protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = UI)
 	TSubclassOf<class UABHUDWidget> HUDWidgetClass;
 
@@ -35,8 +39,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = UI)
 	TSubclassOf<class UABGameplayResultWidget> ResultWidgetClass;
 
-private:
-	void OnGamePause();
 
 private:
 	UPROPERTY()

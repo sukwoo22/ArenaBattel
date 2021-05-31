@@ -32,7 +32,7 @@ void AABGameMode::PostLogin(APlayerController * NewPlayer)
 	ABCHECK(nullptr != ABPlayerState);
 	INIT_PLAYER_DATA Message;
 	Message.ReceiverID = ABPlayerState->GetUniqueID();
-	ABMsgEngine::SendMessage(Message);
+	FABMsgEngine::SendMessage(Message);
 }
 
 void AABGameMode::AddScore(class AABPlayerController* ScoredPlayer)
@@ -44,7 +44,7 @@ void AABGameMode::AddScore(class AABPlayerController* ScoredPlayer)
 		{
 			ADD_GAME_SCORE Message;
 			Message.ReceiverID = ABPlayerController->GetUniqueID();
-			ABMsgEngine::SendMessage(Message);
+			FABMsgEngine::SendMessage(Message);
 			break;
 		}
 	}
@@ -67,7 +67,7 @@ void AABGameMode::AddScore(class AABPlayerController* ScoredPlayer)
 			{
 				SHOW_RESULT_UI SRUMessage;
 				SRUMessage.ReceiverID = ABPlayerController->GetUniqueID();
-				ABMsgEngine::SendMessage(SRUMessage);
+				FABMsgEngine::SendMessage(SRUMessage);
 			}
 		}
 	}

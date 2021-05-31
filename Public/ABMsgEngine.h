@@ -17,7 +17,7 @@ enum class EManagerID
 /**
  * 
  */
-class ABMsgEngine
+class ARENABATTLE_API FABMsgEngine
 {
 public:
 
@@ -28,9 +28,9 @@ public:
 
 private:
 
-	static ABMsgEngine* Get()
+	static FABMsgEngine* Get()
 	{
-		static ABMsgEngine* MsgEngine = new ABMsgEngine();
+		static FABMsgEngine* MsgEngine = new FABMsgEngine();
 		return MsgEngine;
 	}
 	static TMap<EManagerID, TMap<uint32, IABMessageHandler*>>& GetMessageHandlerManagerMap()
@@ -38,11 +38,11 @@ private:
 		return Get()->MessageHandlerManagerMap;
 	}
 
-	ABMsgEngine() = default;
-	ABMsgEngine(const ABMsgEngine&) = delete;
-	ABMsgEngine& operator=(const ABMsgEngine&) = delete;
-	ABMsgEngine(ABMsgEngine&&) = delete;
-	ABMsgEngine& operator=(const ABMsgEngine&&) = delete;
+	FABMsgEngine() = default;
+	FABMsgEngine(const FABMsgEngine&) = delete;
+	FABMsgEngine& operator=(const FABMsgEngine&) = delete;
+	FABMsgEngine(FABMsgEngine&&) = delete;
+	FABMsgEngine& operator=(const FABMsgEngine&&) = delete;
 
 private:
 

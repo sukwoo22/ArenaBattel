@@ -4,7 +4,7 @@
 #include "ABMsgEngine.h"
 
 
-void ABMsgEngine::AddMsgHandlerInManager(EManagerID ManagerID, int32 MessageHandlerID, IABMessageHandler* MessageHandler)
+void FABMsgEngine::AddMsgHandlerInManager(EManagerID ManagerID, int32 MessageHandlerID, IABMessageHandler* MessageHandler)
 {
 	ABCHECK(nullptr != MessageHandler);
 	auto& MsgHandlerManagerMap = GetMessageHandlerManagerMap();
@@ -13,7 +13,7 @@ void ABMsgEngine::AddMsgHandlerInManager(EManagerID ManagerID, int32 MessageHand
 	MsgHandlerManager.Add(MessageHandlerID, MessageHandler);
 }
 
-void ABMsgEngine::DeleteMsgHandlerInManager(EManagerID ManagerID, int32 MessageHandlerID)
+void FABMsgEngine::DeleteMsgHandlerInManager(EManagerID ManagerID, int32 MessageHandlerID)
 {
 	ABCHECK(0 != MessageHandlerID);
 	auto& MsgHandlerManagerMap = GetMessageHandlerManagerMap();
@@ -26,7 +26,7 @@ void ABMsgEngine::DeleteMsgHandlerInManager(EManagerID ManagerID, int32 MessageH
 	}
 }
 
-void ABMsgEngine::SendMessage(FABMessage& Message)
+void FABMsgEngine::SendMessage(FABMessage& Message)
 {
 	auto& MsgHandlerManagerMap = GetMessageHandlerManagerMap();
 
@@ -56,12 +56,6 @@ void ABMsgEngine::SendMessage(FABMessage& Message)
 				{
 					MessageHandler->HandleMessage(Message);
 				}
-				else
-				{
-					auto MMessageHandler = Cast<ABMulticastMessageHandler>(MessageHandler);
-					MMessageHandler->HandleMessage(Message);
-				}
-				//HandlerMap[Message.ReceiverID]->HandleMessage(Message);
 				return;
 			}
 		}

@@ -26,7 +26,7 @@ bool UBTDecorator_IsInAttackRange::CalculateRawConditionValue(UBehaviorTreeCompo
 
 	GET_FINAL_ATTACK_RANGE Message;
 	Message.ReceiverID = ControllingPawn->GetUniqueID();
-	ABMsgEngine::SendMessage(Message);
+	FABMsgEngine::SendMessage(Message);
 
 	bResult = (Target->GetDistanceTo(ControllingPawn) <= Message.FinalAttackRange);
 	

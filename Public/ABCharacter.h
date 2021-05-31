@@ -7,10 +7,9 @@
 #include "ABMessageHandler.h"
 #include "ABCharacter.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnAttackEndDelegate);
 
 UCLASS()
-class ARENABATTLE_API AABCharacter : public ACharacter, public IABMessageHandler
+class ARENABATTLE_API AABCharacter : public ACharacter, public FABSiglecastMessageHandler
 {
 	GENERATED_BODY()
 
@@ -18,19 +17,9 @@ public:
 	// Sets default values for this character's properties
 	AABCharacter();
 
-	virtual void BindMsgHandlerDelegates() override;
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	EControlMode CurrentControlMode;
-	FVector DirectionToMove;
-	float ArmLengthTo;
-	FRotator ArmRotationTo;
-	float ArmLengthSpeed;
-	float ArmRotationSpeed;
-
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -40,41 +29,47 @@ public:
 	virtual void PostInitializeComponents() override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
-	void Attack();
-
-	UPROPERTY(VisibleAnywhere, Category = Weapon)
-	class AABWeapon* CurrentWeapon;
-
-	UPROPERTY(VisibleAnywhere, Category = Stat)
-	class UABCharacterStatComponent* CharacterStat;
-
-	UPROPERTY(VisibleAnywhere, Category = Camera)
-	USpringArmComponent* SpringArm;
-
-	UPROPERTY(VisibleAnywhere, Category = Camera)
-	UCameraComponent* Camera;
-
-	UPROPERTY(VisibleAnywhere, Category = UI)
-	class UWidgetComponent* HPBarWidget;
-
-	FOnAttackEndDelegate OnAttackEnd;
+	virtual void BindMsgHandlerDelegates() override;
 
 private:
+	// Axis Mapping
 	void UpDown(float NewAxisValue);
 	void LeftRight(float NewAxisValue);
 	void LookUp(float NewAxisValue);
 	void Turn(float NewAxisValue);
-
+	// Action Mapping
 	void ViewChange();
+	void Attack();
 
 	UFUNCTION()
 	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
-
 	void AttackCheck();
 
 	void OnAssetLoadCompleted();
 
 private:
+	EControlMode CurrentControlMode;
+	FVector DirectionToMove;
+	float ArmLengthTo;
+	FRotator ArmRotationTo;
+	float ArmLengthSpeed;
+	float ArmRotationSpeed;
+
+	UPROPERTY(VisibleAnywhere, Category = Weapon)
+		class AABWeapon* CurrentWeapon;
+
+	UPROPERTY(VisibleAnywhere, Category = Stat)
+		class UABCharacterStatComponent* CharacterStat;
+
+	UPROPERTY(VisibleAnywhere, Category = Camera)
+		USpringArmComponent* SpringArm;
+
+	UPROPERTY(VisibleAnywhere, Category = Camera)
+		UCameraComponent* Camera;
+
+	UPROPERTY(VisibleAnywhere, Category = UI)
+		class UWidgetComponent* HPBarWidget;
+
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
 	bool IsAttacking;
 

@@ -68,7 +68,7 @@ void AABItemBox::OnCharacterOverlap(UPrimitiveComponent * OverlappedComp, AActor
 		SET_WEAPON SWMessage;
 		SWMessage.Weapon = NewWeapon;
 		SWMessage.ReceiverID = ABCharacter->GetUniqueID();
-		ABMsgEngine::SendMessage(SWMessage);
+		FABMsgEngine::SendMessage(SWMessage);
 		Effect->Activate(true);
 		Box->SetHiddenInGame(true, true);
 		SetActorEnableCollision(false);

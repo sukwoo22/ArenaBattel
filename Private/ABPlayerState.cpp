@@ -16,7 +16,7 @@ AABPlayerState::AABPlayerState()
 	CharacterIndex = 0;
 
 	BindMsgHandlerDelegates();
-	ABMsgEngine::AddMsgHandlerInManager(EManagerID::PLAYER_STATE_MANAGER, GetUniqueID(), this);
+	FABMsgEngine::AddMsgHandlerInManager(EManagerID::PLAYER_STATE_MANAGER, GetUniqueID(), this);
 }
 
 void AABPlayerState::BindMsgHandlerDelegates()
@@ -36,7 +36,6 @@ void AABPlayerState::BindMsgHandlerDelegates()
 		else
 		{
 			float Result = (float)Exp / (float)CurrentStatData->NextExp;
-			ABLOG(Warning, TEXT("Ratio : %f, Current : %d, Next : %d"), Result, Exp, CurrentStatData->NextExp);
 			Message.ExpRatio = Result;
 		}
 	}MH_DEFI_END;
@@ -70,9 +69,14 @@ void AABPlayerState::BindMsgHandlerDelegates()
 		else
 		{
 			float Result = (float)Exp / (float)CurrentStatData->NextExp;
-			ABLOG(Warning, TEXT("Ratio : %f, Current : %d, Next : %d"), Result, Exp, CurrentStatData->NextExp);
 			Message.ExpRatio = Result;
 		}
+	}MH_DEFI_END;
+	
+	MH_DEFI(GET_SAVE_SLOT_NAME)
+	{
+		MH_INIT(GET_SAVE_SLOT_NAME);
+		Message.SaveSlotName = &SaveSlotName;
 	}MH_DEFI_END;
 
 	MH_DEFI(ADD_EXP)
@@ -145,7 +149,7 @@ void AABPlayerState::BindMsgHandlerDelegates()
 
 		if (!UGameplayStatics::SaveGameToSlot(NewPlayerData, SaveSlotName, 0))
 		{
-			ABLOG(Error, TEXT("SaveGame Error!"));
+			ABLOG_MSG(Error, Message.ID, TEXT("SaveGame Error!"));
 		}
 	}MH_DEFI_END;
 }

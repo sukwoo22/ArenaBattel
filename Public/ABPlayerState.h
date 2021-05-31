@@ -12,7 +12,7 @@
  * 
  */
 UCLASS()
-class ARENABATTLE_API AABPlayerState : public APlayerState, public ABMulticastMessageHandler
+class ARENABATTLE_API AABPlayerState : public APlayerState, public FABMulticastMessageHandler
 {
 	GENERATED_BODY()
 	
@@ -21,13 +21,14 @@ public:
 
 	virtual void BindMsgHandlerDelegates() override;
 
-	FString SaveSlotName;
-
 private:
 	void SetCharacterLevel(int32 NewCharacterLevel);
-	struct FABCharacterData* CurrentStatData;
 	
 private:
+	FString SaveSlotName;
+
+	struct FABCharacterData* CurrentStatData;
+
 	UPROPERTY(Transient)
 	int32 GameScore;
 

@@ -93,12 +93,8 @@ AABCharacter::AABCharacter()
 
 	CurrentWeapon = nullptr;
 
-	if (IsBindingCmdZero())
-	{
-		BindMsgHandlerDelegates();
-	}
-
-	ABMsgEngine::AddMsgHandlerInManager(EManagerID::CHARACTER_MANAGER, GetUniqueID(), this);
+	BindMsgHandlerDelegates();
+	FABMsgEngine::AddMsgHandlerInManager(EManagerID::CHARACTER_MANAGER, GetUniqueID(), this);
 }
 
 void AABCharacter::BindMsgHandlerDelegates()
@@ -124,7 +120,7 @@ void AABCharacter::BindMsgHandlerDelegates()
 					
 					GET_HUD_WIDGET GHWMessage;
 					GHWMessage.ReceiverID = ABPlayerController->GetUniqueID();
-					ABMsgEngine::SendMessage(GHWMessage);
+					FABMsgEngine::SendMessage(GHWMessage);
 					GHWMessage.HUDWidget->BindCharacterStat(CharacterStat);
 
 					auto ABPlayerState = Cast<AABPlayerState>(GetPlayerState());
@@ -132,12 +128,12 @@ void AABCharacter::BindMsgHandlerDelegates()
 					
 					GET_CHARACTER_LEVEL GCLMessage;
 					GCLMessage.ReceiverID = ABPlayerState->GetUniqueID();
-					ABMsgEngine::SendMessage(GCLMessage);
+					FABMsgEngine::SendMessage(GCLMessage);
 					
 					SET_NEW_LEVEL SNLMessage;
 					SNLMessage.ReceiverID = CharacterStat->GetUniqueID();
 					SNLMessage.NewLevel = GCLMessage.CharacterLevel;
-					ABMsgEngine::SendMessage(SNLMessage);
+					FABMsgEngine::SendMessage(SNLMessage);
 				}
 				else
 				{
@@ -145,12 +141,12 @@ void AABCharacter::BindMsgHandlerDelegates()
 					ABCHECK(nullptr != ABGameMode);
 					int32 TargetLevel = FMath::CeilToInt(((float)ABGameMode->GetScore() * 0.8f));
 					int32 FinalLevel = FMath::Clamp<int32>(TargetLevel, 1, 20);
-					ABLOG(Warning, TEXT("New NPC Level : %d "), FinalLevel);
+					ABLOG_MSG(Warning, Message.ID, TEXT("New NPC Level : %d "), FinalLevel);
 					
 					SET_NEW_LEVEL SNLMessage;
 					SNLMessage.ReceiverID = CharacterStat->GetUniqueID();
 					SNLMessage.NewLevel = FinalLevel;
-					ABMsgEngine::SendMessage(SNLMessage);
+					FABMsgEngine::SendMessage(SNLMessage);
 				}
 				SetActorHiddenInGame(true);
 				HPBarWidget->SetHiddenInGame(true);
@@ -163,7 +159,7 @@ void AABCharacter::BindMsgHandlerDelegates()
 				HPBarWidget->SetHiddenInGame(false);
 				SetCanBeDamaged(true);
 				
-				CharacterStat->MessageHandlerDelegate(EMessageID::ON_HP_IS_ZERO).BindLambda([this](FABMessage& InMessage)->void {
+				CharacterStat->SinglecastMessageHandlerDelegate(EMessageID::ON_HP_IS_ZERO).BindLambda([this](FABMessage& InMessage)->void {
 					SET_CHARACTER_STATE SCSMessage;
 					SCSMessage.CharacterState = ECharacterState::DEAD;
 					HandleMessage(SCSMessage);
@@ -213,7 +209,7 @@ void AABCharacter::BindMsgHandlerDelegates()
 					{
 						SHOW_RESULT_UI SRUMessage;
 						SRUMessage.ReceiverID = ABPlayerController->GetUniqueID();
-						ABMsgEngine::SendMessage(SRUMessage);
+						FABMsgEngine::SendMessage(SRUMessage);
 					}
 					else
 					{
@@ -224,7 +220,7 @@ void AABCharacter::BindMsgHandlerDelegates()
 				break;
 			}
 			default:
-				ABLOG(Warning, TEXT("INVALID MODE"));
+				ABLOG_MSG(Warning, Message.ID, TEXT("Invalid Mode"));
 				break;
 		}
 	}MH_DEFI_END;
@@ -234,7 +230,7 @@ void AABCharacter::BindMsgHandlerDelegates()
 		MH_INIT(GET_EXP);
 		GET_DROP_EXP GDEMessage;
 		GDEMessage.ReceiverID = CharacterStat->GetUniqueID();
-		ABMsgEngine::SendMessage(GDEMessage);
+		FABMsgEngine::SendMessage(GDEMessage);
 		Message.Exp = GDEMessage.DropExp;
 		//Message.Exp = CharacterStat->GetDropExp();
 	}MH_DEFI_END;
@@ -250,7 +246,7 @@ void AABCharacter::BindMsgHandlerDelegates()
 		MH_INIT(GET_FINAL_ATTACK_DAMAGE);
 		GET_ATTACK GAMessage;
 		GAMessage.ReceiverID = CharacterStat->GetUniqueID();
-		ABMsgEngine::SendMessage(GAMessage);
+		FABMsgEngine::SendMessage(GAMessage);
 		float AttackDamage = nullptr != CurrentWeapon ? GAMessage.Attack + CurrentWeapon->GetAttackDamage() : GAMessage.Attack;
 		float AttackModifier = nullptr != CurrentWeapon ? CurrentWeapon->GetAttackModifier() : 1.0f;
 		Message.FinalDamage = AttackDamage * AttackModifier;
@@ -298,7 +294,7 @@ void AABCharacter::BindMsgHandlerDelegates()
 				break;
 
 			default:
-				ABLOG(Warning, TEXT("Invalid control mode"));
+				ABLOG_MSG(Warning, Message.ID, TEXT("Invalid control mode"));
 				break;
 		}
 	}MH_DEFI_END;
@@ -438,7 +434,7 @@ void AABCharacter::BeginPlay()
 		ABCHECK(nullptr != ABPlayerState);
 		GET_CHARACTER_INDEX GCIMessage;
 		GCIMessage.ReceiverID = ABPlayerState->GetUniqueID();
-		ABMsgEngine::SendMessage(GCIMessage);
+		FABMsgEngine::SendMessage(GCIMessage);
 		AssetIndex = GCIMessage.CharacterIndex;
 	}
 	else
@@ -481,11 +477,10 @@ void AABCharacter::Tick(float DeltaTime)
 void AABCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
+	
 	PlayerInputComponent->BindAction(TEXT("ViewChange"), EInputEvent::IE_Pressed, this, &AABCharacter::ViewChange);
 	PlayerInputComponent->BindAction(TEXT("Jump"), EInputEvent::IE_Pressed, this, &AABCharacter::Jump);
 	PlayerInputComponent->BindAction(TEXT("Attack"), EInputEvent::IE_Pressed, this, &AABCharacter::Attack);
-
 	PlayerInputComponent->BindAxis(TEXT("UpDown"), this, &AABCharacter::UpDown);
 	PlayerInputComponent->BindAxis(TEXT("LeftRight"), this, &AABCharacter::LeftRight);
 	PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &AABCharacter::LookUp);
@@ -517,11 +512,11 @@ void AABCharacter::PostInitializeComponents()
 float AABCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEvent, AController * EventInstigator, AActor * DamageCauser)
 {
 	float FinalDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
+	
 	SET_DAMAGE SDMessage;
 	SDMessage.ReceiverID = CharacterStat->GetUniqueID();
 	SDMessage.NewDamage = FinalDamage;
-	ABMsgEngine::SendMessage(SDMessage);
+	FABMsgEngine::SendMessage(SDMessage);
 
 	if (CurrentState == ECharacterState::DEAD)
 	{
@@ -532,7 +527,7 @@ float AABCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 			GAIN_EXP Message;
 			Message.ReceiverID = PlayerController->GetUniqueID();
 			Message.KilledEnemyID = this->GetUniqueID();
-			ABMsgEngine::SendMessage(Message);
+			FABMsgEngine::SendMessage(Message);
 		}
 	}
 	return FinalDamage;
@@ -621,7 +616,8 @@ void AABCharacter::OnAttackMontageEnded(UAnimMontage * Montage, bool bInterrupte
 	IsAttacking = false;
 	ATTACK_END_COMBO_STATE AECSMessage;
 	HandleMessage(AECSMessage);
-	OnAttackEnd.Broadcast();
+	ON_ATTACK_END OAEMessgae;
+	HandleMessage(OAEMessgae);
 }
 
 void AABCharacter::AttackCheck()

@@ -8,58 +8,30 @@
 #include "ABPlayerState.h"
 #include "ABMsgEngine.h"
 
-
-void UABHUDWidget::BindMsgHandlerDelegates()
-{
-	MH_DEFI(BIND_CHARACTER_STAT)
-	{
-		MH_INIT(BIND_CHARACTER_STAT);
-		////*ABCHECK*/(nullptr != CharacterStat);
-		////CurrentCharacterStat = CharacterStat;
-		//CharacterStat->MessageHandlerMulticastDelegate(EMessageID::ON_HP_CHANGED).AddLambda([this](FABMessage& InMessage)->void {
-		//	ABCHECK(CurrentCharacterStat.IsValid());
-		//	GET_HP_RATIO GHRMessage;
-		//	GHRMessage.ReceiverID = CurrentCharacterStat->GetUniqueID();
-		//	ABMsgEngine::SendMessage(GHRMessage);
-
-		//	HPBar->SetPercent(GHRMessage.HPRatio);
-		//});
-	}MH_DEFI_END;
-
-	MH_DEFI(BIND_PLAYER_STATE)
-	{
-		MH_INIT(BIND_PLAYER_STATE);
-
-	}MH_DEFI_END;
-}
-
 void UABHUDWidget::BindCharacterStat(class UABCharacterStatComponent* CharacterStat)
 {
 	ABCHECK(nullptr != CharacterStat);
 	CurrentCharacterStat = CharacterStat;
-	CharacterStat->MessageHandlerMulticastDelegate(EMessageID::ON_HP_CHANGED).AddLambda([this](FABMessage& InMessage)->void {
-		ABCHECK(CurrentCharacterStat.IsValid());
+	CurrentCharacterStat->MulticastMessageHandlerDelegate(EMessageID::ON_HP_CHANGED).AddLambda([this](FABMessage& InMessage)->void {
+		ABCHECK(nullptr != HPBar);
+
 		GET_HP_RATIO GHRMessage;
 		GHRMessage.ReceiverID = CurrentCharacterStat->GetUniqueID();
-		ABMsgEngine::SendMessage(GHRMessage);
+		FABMsgEngine::SendMessage(GHRMessage);
 
 		HPBar->SetPercent(GHRMessage.HPRatio);
 	});
 }
-
-//void UABHUDWidget::BindPlayerState(GET_PLAYER_STATE Inmessage)
 
 void UABHUDWidget::BindPlayerState(class AABPlayerState* PlayerState)
 {
 	ABCHECK(nullptr != PlayerState);
 	CurrentPlayerState = PlayerState;
 
-	PlayerState->MessageHandlerMulticastDelegate(EMessageID::ON_PLAYER_STATE_CHANGED).AddLambda([this](FABMessage& InMessage)->void {
-		ABCHECK(CurrentPlayerState.IsValid());
-
+	PlayerState->MulticastMessageHandlerDelegate(EMessageID::ON_PLAYER_STATE_CHANGED).AddLambda([this](FABMessage& InMessage)->void {
 		GET_PLAYER_STATE GPSMessage;
 		GPSMessage.ReceiverID = CurrentPlayerState->GetUniqueID();
-		ABMsgEngine::SendMessage(GPSMessage);
+		FABMsgEngine::SendMessage(GPSMessage);
 
 		ExpBar->SetPercent(GPSMessage.ExpRatio);
 		PlayerName->SetText(FText::FromString(GPSMessage.PlayerName));

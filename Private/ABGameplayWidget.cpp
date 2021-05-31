@@ -38,7 +38,7 @@ void UABGameplayWidget::OnResumeClicked()
 	CHANGE_INPUT_MODE Message;
 	Message.ReceiverID = ABPlayerController->GetUniqueID();
 	Message.bGameMode = true;
-	ABMsgEngine::SendMessage(Message);
+	FABMsgEngine::SendMessage(Message);
 	ABPlayerController->SetPause(false);
 }
 

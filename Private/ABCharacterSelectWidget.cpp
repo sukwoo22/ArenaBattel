@@ -10,6 +10,7 @@
 #include "Components/EditableTextBox.h"
 #include "ABSaveGame.h"
 #include "ABPlayerState.h"
+#include "ABMsgEngine.h"
 
 
 void UABCharacterSelectWidget::NextCharacter(bool bForward /*= true*/)
@@ -87,7 +88,10 @@ void UABCharacterSelectWidget::OnConfirmClicked()
 	NewPlayData->CharacterIndex = CurrentIndex;
 
 	auto ABPlayerState = GetDefault<AABPlayerState>();
-	if (UGameplayStatics::SaveGameToSlot(NewPlayData, ABPlayerState->SaveSlotName, 0))
+	GET_SAVE_SLOT_NAME GSSNMessage;
+	GSSNMessage.ReceiverID = ABPlayerState->GetUniqueID();
+	FABMsgEngine::SendMessage(GSSNMessage);
+	if (UGameplayStatics::SaveGameToSlot(NewPlayData, *GSSNMessage.SaveSlotName, 0))
 	{
 		UGameplayStatics::OpenLevel(GetWorld(), TEXT("Gameplay"));
 	}

@@ -10,7 +10,7 @@
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class ARENABATTLE_API UABCharacterStatComponent : public UActorComponent, public ABMulticastMessageHandler
+class ARENABATTLE_API UABCharacterStatComponent : public UActorComponent, public FABMulticastMessageHandler
 {
 	GENERATED_BODY()
 

@@ -19,7 +19,6 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
-	void UpdateHPWidget();
 
 private:
 	TWeakObjectPtr<class UABCharacterStatComponent> CurrentCharacterStat;

@@ -31,7 +31,7 @@ AABPlayerController::AABPlayerController()
 	}
 
 	BindMsgHandlerDelegates();
-	ABMsgEngine::AddMsgHandlerInManager(EManagerID::CONTROLLER_MANAGER, GetUniqueID(), this);
+	FABMsgEngine::AddMsgHandlerInManager(EManagerID::CONTROLLER_MANAGER, GetUniqueID(), this);
 }
 
 void AABPlayerController::PostInitializeComponents()
@@ -59,12 +59,12 @@ void AABPlayerController::BindMsgHandlerDelegates()
 		MH_INIT(GAIN_EXP);
 		GET_EXP GEMessage;
 		GEMessage.ReceiverID = Message.KilledEnemyID;
-		ABMsgEngine::SendMessage(GEMessage);
+		FABMsgEngine::SendMessage(GEMessage);
 
 		ADD_EXP AEMessage;
 		AEMessage.Exp = GEMessage.Exp;
 		AEMessage.ReceiverID = ABPlayerState->GetUniqueID();
-		ABMsgEngine::SendMessage(AEMessage);
+		FABMsgEngine::SendMessage(AEMessage);
 	}MH_DEFI_END;
 
 	MH_DEFI(ADD_GAME_SCORE)
@@ -72,7 +72,7 @@ void AABPlayerController::BindMsgHandlerDelegates()
 		MH_INIT(ADD_GAME_SCORE);
 		ADD_GAME_SCORE AGSMessage;
 		AGSMessage.ReceiverID = ABPlayerState->GetUniqueID();
-		ABMsgEngine::SendMessage(AGSMessage);
+		FABMsgEngine::SendMessage(AGSMessage);
 	}MH_DEFI_END;
 
 	MH_DEFI(CHANGE_INPUT_MODE)
@@ -130,7 +130,7 @@ void AABPlayerController::BeginPlay()
 
 	ON_PLAYER_STATE_CHANGED OPSCMessage;
 	OPSCMessage.ReceiverID = ABPlayerState->GetUniqueID();
-	ABMsgEngine::SendMessage(OPSCMessage);
+	FABMsgEngine::SendMessage(OPSCMessage);
 }
 
 void AABPlayerController::OnGamePause()
